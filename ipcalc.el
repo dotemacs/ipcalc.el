@@ -102,7 +102,6 @@
             ((string= "1" (substring binary start (1+ start)))
              (setq inverted
                    (concat inverted (replace-regexp-in-string "1" "0" pos)))))
-      (message "in while, start is %d pos is %s" start pos)
     (setq start (1+ start)))
   inverted))
 
@@ -116,8 +115,9 @@
 
 (defun host+1 (binary-ip)
   "increment the given BINARY-IP by 1"
-  (aset binary-ip (- cidr-default 1) ?1)
-  binary-ip)
+  (let ((tmp binary-ip))
+  (aset tmp (- cidr-default 1) ?1)
+  tmp))
 
 (defun host-max (ip cidr)
   (let ((count (string-to-int cidr))
@@ -146,6 +146,27 @@
   (insert
    (list-to-string lst)))
 
+(defun bin-to-int (bin)
+  "Convert binary to integer"
+  (int-to-string (read (concat "#b" bin))))
+
+(defun binary-to-ip (binary)
+  "convert binary to IP address"
+  (let* (full-ip
+        (count 0)
+        (1st-octet (substring binary 0 8))
+        (2nd-octet (substring binary 8 16))
+        (3rd-octet (substring binary 16 24))
+        (4th-octet (substring binary 24 32))
+        (octets (mapcar
+                 'bin-to-int
+                 `(,1st-octet ,2nd-octet ,3rd-octet ,4th-octet))))
+    (while (< count 3)
+      (setq full-ip (concat full-ip (nth count octets) "."))
+      (setq count (incf count)))
+    (concat full-ip (car (last octets)))))
+
+
 (defun ipcalc (ip/cidr)
   "IP calculator"
   (let* ((ip (car (split-string ip/cidr "/")))
@@ -154,19 +175,26 @@
          (ip-as-binary (octets-as-binary (ip-to-octets ip)))
          (wildcard (invert-binary
                     (ones-and-pad cidr-int)))
+         (wildcard-ip (binary-to-ip wildcard))
+         (net-binary (network ip cidr))
+         (net-ip (binary-to-ip net-binary))
+         (hmax (host-max (network ip cidr) cidr))
+         (hmax-ip (binary-to-ip hmax))
          (buffer "*ipcalc*")
-         (net (network ip cidr)))
+         (broadcast-binary (host+1 (host-max net-binary cidr))))
     (if (get-buffer buffer)
         (kill-buffer buffer))
     (pop-to-buffer buffer)
     (insert
      (format "Address:%15s%37s\n" ip ip-as-binary)
      (format "Netmask:%5s%47s\n" cidr (ones-and-pad cidr-int))
-     (format "Wildcard:%51s\n" wildcard)
-     (format "=>\nNetwork:%52s\n" net)
-     (format "HostMin:%52s\n" (host+1 net))
-     (format "HostMax:%52s\n" net cidr)
-     (format "Broadcast:%50s\n" (host+1 (host-max net cidr)))
+     (format "Wildcard:%11s%40s\n" wildcard-ip wildcard)
+     (format "=>\nNetwork:%14s%38s\n" net-ip (network ip cidr))
+     (format "HostMin:%14s%38s\n"
+             (binary-to-ip (host+1 (network ip cidr)))
+             (host+1 (network ip cidr)))
+     (format "HostMax:%16s%36s\n" hmax-ip hmax)
+     (format "Broadcast:%14s%36s\n"
+             (binary-to-ip (host+1 (host-max net-binary cidr)))
+             (host+1 (host-max net-binary cidr)))
      (format "Hosts/Net: %d\n" (hosts/net cidr-int)))))
-
-;;(ipcalc "192.168.0.23/21")
