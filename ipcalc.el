@@ -198,3 +198,5 @@
              (binary-to-ip (host+1 (host-max net-binary cidr)))
              (host+1 (host-max net-binary cidr)))
      (format "Hosts/Net: %d\n" (hosts/net cidr-int)))))
+
+(provide 'ipcalc)
