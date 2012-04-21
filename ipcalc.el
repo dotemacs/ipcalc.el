@@ -88,22 +88,14 @@
           (make-string (- cidr-default num) ?0)))
 
 
-
 (defun invert-binary (num)
-  "Takes a string and inverts 0 to 1 and vice versa"
-  (let ((start 0)
-        (inverted "")
-        (binary num))
-    (while (< start (length binary))
-      (setq pos (substring binary start (1+ start)))
-      (cond ((string= "0" pos)
-             (setq inverted
-                   (concat inverted (replace-regexp-in-string "0" "1" pos))))
-            ((string= "1" (substring binary start (1+ start)))
-             (setq inverted
-                   (concat inverted (replace-regexp-in-string "1" "0" pos)))))
-    (setq start (1+ start)))
-  inverted))
+  "Invert 1s to 0s and vice versa
+
+  (credit: the simpler version below re-writen by pjb from #emacs
+          on freenode)"
+  (map 'string
+       (lambda (ch) (aref "10" (position ch "01")))
+       (remove-if-not (lambda (ch) (position ch "01")) num)))
 
 (defun network (ip cidr)
   "Takes IP & CIDR and produces network"
