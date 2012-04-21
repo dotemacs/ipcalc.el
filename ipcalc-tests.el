@@ -1,4 +1,6 @@
 
+;; eval this buffer to run the tests
+
 (load-file "ipcalc.el")
 (require 'ipcalc)
 
