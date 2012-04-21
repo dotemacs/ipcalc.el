@@ -6,7 +6,7 @@
 ;; Maintainer: Aleksandar Simic
 ;; License: BSD
 ;; Created: 2012-03-11 17:10
-;; Version: 0.1.0
+;; Version: 0.2.0
 ;; URL: http://github.org/dotemacs/ipcalc.el
 ;; Keywords: networking
 
