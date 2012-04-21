@@ -1,6 +1,6 @@
 ;; ipcalc.el - IP subnet calculator
 
-;; Filename: elisp-format.el
+;; Filename: ipcalc.el
 ;; Description: IP calculator
 ;; Author: "Aleksandar Simic" <asimic@gmail.com>
 ;; Maintainer: Aleksandar Simic
@@ -46,9 +46,9 @@
 
 (defconst cidr-default 32 "CIDR value")
 
-;;; 08 Jun 1997 Jamie Zawinski <jwz@netscape.com> comp.emacs
-;;;
+
 (defun int-to-bin-string (n &optional length)
+  ;; 08 Jun 1997 Jamie Zawinski <jwz@netscape.com> comp.emacs
   "Convert integer N to bit string (LENGTH, default 8)."
   (let* ((i    0)
 	 (len  (or length 8))
