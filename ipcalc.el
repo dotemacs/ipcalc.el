@@ -1,17 +1,20 @@
-;; ipcalc.el - IP subnet calculator
+;; ipcalc.el --- IP subnet calculator
 
 ;; Filename: ipcalc.el
 ;; Description: IP calculator
 ;; Author: "Aleksandar Simic" <asimic@gmail.com>
-;; Maintainer: Aleksandar Simic
 ;; License: BSD
 ;; Created: 2012-03-11 17:10
-;; Version: 0.2.0
+;; Version: 0.2.1
 ;; URL: http://github.org/dotemacs/ipcalc.el
 ;; Keywords: networking
 
-;;; This file is NOT part of GNU Emacs
+;;; Commentary:
+;;
+;; Usage: evaluate (ipcalc "192.168.0.23/21")
 
+;;; This file is NOT part of GNU Emacs
+;;
 ;; Copyright (c) 2012, Aleksandar Simic
 ;; All rights reserved.
 ;;
@@ -38,14 +41,9 @@
 ;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 ;; OF THE POSSIBILITY OF SUCH DAMAGE.
 
-;;; Commentary:
-
-;; Usage: evaluate (ipcalc "192.168.0.23/21")
-
-
+;;; Code
 
 (defconst cidr-default 32 "CIDR value")
-
 
 (defun int-to-bin-string (n &optional length)
   ;; 08 Jun 1997 Jamie Zawinski <jwz@netscape.com> comp.emacs
@@ -60,7 +58,6 @@
       )
     s))
 
-
 (defun octets-as-binary (list-of-octets)
   "return LST of octets as a single binary string"
   (let ((binary ""))
@@ -71,7 +68,6 @@
                    (string-to-int (car list-of-octets)))))
       (setq list-of-octets (cdr list-of-octets)))
   binary))
-
 
 (defun ip-to-octets (ip)
   "split IP address and return the octets"
@@ -86,7 +82,6 @@
     (error "wrong value provided"))
   (concat (make-string num ?1)
           (make-string (- cidr-default num) ?0)))
-
 
 (defun invert-binary (num)
   "Invert 1s to 0s and vice versa
@@ -123,7 +118,6 @@
   "Calculate Hosts/Net for the NUM given"
   (- (expt 2 (- cidr-default num)) 2))
 
-
 (defmacro list-to-string (lst)
   "convert LST to string"
   `(mapconcat
@@ -158,7 +152,6 @@
       (setq count (incf count)))
     (concat full-ip (car (last octets)))))
 
-
 (defun ipcalc (ip/cidr)
   "IP calculator"
   (let* ((ip (car (split-string ip/cidr "/")))
@@ -192,3 +185,5 @@
      (format "Hosts/Net: %d\n" (hosts/net cidr-int)))))
 
 (provide 'ipcalc)
+
+;;; ipcalc.el ends here
