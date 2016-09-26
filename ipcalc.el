@@ -64,7 +64,7 @@
     (setq binary
           (concat binary
                   (int-to-bin-string
-                   (string-to-int (car list-of-octets)))))
+                   (string-to-number (car list-of-octets)))))
       (setq list-of-octets (cdr list-of-octets)))
   binary))
 
@@ -93,7 +93,7 @@
 
 (defun network (ip cidr)
   "Takes IP & CIDR and produces network."
-  (let ((cidr-as-int (string-to-int cidr)))
+  (let ((cidr-as-int (string-to-number cidr)))
     (concat
      (substring (octets-as-binary
                  (ip-to-octets ip)) 0 cidr-as-int)
@@ -107,7 +107,7 @@
 
 (defun host-max (ip cidr)
   "Given IP and CIDR, return maximum host as a binary value."
-  (let ((count (string-to-int cidr))
+  (let ((count (string-to-number cidr))
         (max (- cidr-default 1)))
     (while (< count max)
       (aset ip count ?1)
@@ -153,11 +153,11 @@
     (concat full-ip (car (last octets)))))
 
 (defun ipcalc (ip/cidr)
-  "IP calculator."
+  "IP calculator for given IP/CIDR."
   (let* ((ip (car (split-string ip/cidr "/")))
          (ip-in-binary (octets-as-binary (ip-to-octets ip)))
          (cidr (car (cdr (split-string ip/cidr "/"))))
-         (cidr-int (string-to-int cidr))
+         (cidr-int (string-to-number cidr))
          (cidr-binary (ones-and-pad cidr-int))
          (wildcard-binary (invert-binary (ones-and-pad cidr-int)))
          (wildcard-ip (binary-to-ip wildcard-binary))
