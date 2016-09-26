@@ -9,11 +9,7 @@
 ;; URL: http://github.org/dotemacs/ipcalc.el
 ;; Keywords: networking tools
 
-;;; Commentary:
-;;
-;; Usage: evaluate (ipcalc "192.168.0.23/21")
-
-;;; This file is NOT part of GNU Emacs
+;; This file is NOT part of GNU Emacs
 ;;
 ;; Copyright (c) 2012-2016, Aleksandar Simic
 ;; All rights reserved.
@@ -40,6 +36,10 @@
 ;; STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 ;; OF THE POSSIBILITY OF SUCH DAMAGE.
+
+;;; Commentary:
+;;
+;; Usage: evaluate (ipcalc "192.168.0.23/21")
 
 ;;; Code:
 
