@@ -1,4 +1,4 @@
-;; ipcalc.el --- IP subnet calculator
+;;; ipcalc.el --- IP subnet calculator
 
 ;; Filename: ipcalc.el
 ;; Description: IP calculator
@@ -7,7 +7,7 @@
 ;; Created: 2012-03-11 17:10
 ;; Version: 0.2.1
 ;; URL: http://github.org/dotemacs/ipcalc.el
-;; Keywords: networking
+;; Keywords: networking tools
 
 ;;; Commentary:
 ;;
@@ -15,7 +15,7 @@
 
 ;;; This file is NOT part of GNU Emacs
 ;;
-;; Copyright (c) 2012, Aleksandar Simic
+;; Copyright (c) 2012-2016, Aleksandar Simic
 ;; All rights reserved.
 ;;
 ;; Redistribution and use in source and binary forms, with or without
