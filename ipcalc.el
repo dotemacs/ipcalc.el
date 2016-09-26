@@ -48,14 +48,13 @@
 (defun int-to-bin-string (n &optional length)
   ;; 08 Jun 1997 Jamie Zawinski <jwz@netscape.com> comp.emacs
   "Convert integer N to bit string (LENGTH, default 8)."
-  (let* ((i    0)
-	 (len  (or length 8))
+  (let* ((i  0)
+	 (len (or length 8))
 	 (s (make-string len ?0)))
     (while (< i len)
       (if (not (zerop (logand n (ash 1 i))))
           (aset s (- len (1+ i)) ?1))
-      (setq i (1+ i))
-      )
+      (setq i (1+ i)))
     s))
 
 (defun octets-as-binary (list-of-octets)
