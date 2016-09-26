@@ -120,7 +120,7 @@
 (defmacro list-to-string (lst)
   "convert LST to string"
   `(mapconcat
-    '(lambda (val)
+    #'(lambda (val)
        (identity (if (integerp val)
                      (int-to-string val)
                    val)))
