@@ -152,6 +152,7 @@
       (setq count (cl-incf count)))
     (concat full-ip (car (last octets)))))
 
+;;;###autoload
 (defun ipcalc (ip/cidr)
   "IP calculator for given IP/CIDR."
   (let* ((ip (car (split-string ip/cidr "/")))
