@@ -41,9 +41,9 @@
 ;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 ;; OF THE POSSIBILITY OF SUCH DAMAGE.
 
-;;; Code
+;;; Code:
 
-(defconst cidr-default 32 "CIDR value")
+(defconst cidr-default 32 "CIDR value.")
 
 (defun int-to-bin-string (n &optional length)
   ;; 08 Jun 1997 Jamie Zawinski <jwz@netscape.com> comp.emacs
@@ -58,7 +58,7 @@
     s))
 
 (defun octets-as-binary (list-of-octets)
-  "return LST of octets as a single binary string"
+  "Return LIST-OF-OCTETS as a single binary string."
   (let ((binary ""))
   (while list-of-octets
     (setq binary
@@ -69,21 +69,21 @@
   binary))
 
 (defun ip-to-octets (ip)
-  "split IP address and return the octets"
+  "Split IP address and return the octets."
   (let ((octets (split-string ip "\\.")))
     (if (= 4 (length octets))
         octets
       (message "not correct IP format"))))
 
 (defun ones-and-pad (num)
-  "return 1's equal to NUM and pad the rest up to 32"
+  "Return 1's equal to NUM and pad the rest up to 32."
   (unless (and (<= num cidr-default) (> num 0))
-    (error "wrong value provided"))
+    (error "Wrong value provided"))
   (concat (make-string num ?1)
           (make-string (- cidr-default num) ?0)))
 
 (defun invert-binary (num)
-  "Invert 1s to 0s and vice versa
+  "Invert NUM's 1s to 0s and vice versa.
 
   (credit: the simpler version below re-writen by pjb from #emacs
           on freenode)"
@@ -92,7 +92,7 @@
        (cl-remove-if-not (lambda (ch) (cl-position ch "01")) num)))
 
 (defun network (ip cidr)
-  "Takes IP & CIDR and produces network"
+  "Takes IP & CIDR and produces network."
   (let ((cidr-as-int (string-to-int cidr)))
     (concat
      (substring (octets-as-binary
@@ -100,12 +100,13 @@
      (make-string (- cidr-default cidr-as-int) ?0))))
 
 (defun host+1 (binary-ip)
-  "increment the given BINARY-IP by 1"
+  "Increment the given BINARY-IP by 1."
   (let ((tmp binary-ip))
   (aset tmp (- cidr-default 1) ?1)
   tmp))
 
 (defun host-max (ip cidr)
+  "Given IP and CIDR, return maximum host as a binary value."
   (let ((count (string-to-int cidr))
         (max (- cidr-default 1)))
     (while (< count max)
@@ -114,11 +115,11 @@
     ip))
 
 (defun hosts/net (num)
-  "Calculate Hosts/Net for the NUM given"
+  "Calculate Hosts/Net for the NUM given."
   (- (expt 2 (- cidr-default num)) 2))
 
 (defmacro list-to-string (lst)
-  "convert LST to string"
+  "Convert LST to string."
   `(mapconcat
     #'(lambda (val)
        (identity (if (integerp val)
@@ -127,16 +128,16 @@
     ,lst ""))
 
 (defun insert-values (lst)
-  "insert given LST"
+  "Insert given LST."
   (insert
    (list-to-string lst)))
 
 (defun bin-to-int (bin)
-  "Convert binary to integer"
+  "Convert binary value BIN to integer."
   (int-to-string (read (concat "#b" bin))))
 
 (defun binary-to-ip (binary)
-  "convert binary to IP address"
+  "Convert BINARY to IP address."
   (let* (full-ip
         (count 0)
         (1st-octet (substring binary 0 8))
@@ -152,7 +153,7 @@
     (concat full-ip (car (last octets)))))
 
 (defun ipcalc (ip/cidr)
-  "IP calculator"
+  "IP calculator."
   (let* ((ip (car (split-string ip/cidr "/")))
          (ip-in-binary (octets-as-binary (ip-to-octets ip)))
          (cidr (car (cdr (split-string ip/cidr "/"))))
