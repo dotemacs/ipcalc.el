@@ -121,20 +121,6 @@
   "Calculate Hosts/Net for the NUM given."
   (- (expt 2 (- ipcalc--cidr-default num)) 2))
 
-(defmacro ipcalc-list-to-string (lst)
-  "Convert LST to string."
-  `(mapconcat
-    #'(lambda (val)
-       (identity (if (integerp val)
-                     (int-to-string val)
-                   val)))
-    ,lst ""))
-
-(defun ipcalc-insert-values (lst)
-  "Insert given LST."
-  (insert
-   (ipcalc-list-to-string lst)))
-
 (defun ipcalc-bin-to-int (bin)
   "Convert binary value BIN to integer."
   (int-to-string (read (concat "#b" bin))))
