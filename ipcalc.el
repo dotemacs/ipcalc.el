@@ -158,6 +158,7 @@
 ;;;###autoload
 (defun ipcalc (ip/cidr)
   "IP calculator for given IP/CIDR."
+  (interactive "sIP/CIDR: ")
   (let* ((ip (car (split-string ip/cidr "/")))
          (ip-in-binary (ipcalc-octets-as-binary (ipcalc-ip-to-octets ip)))
          (cidr (car (cdr (split-string ip/cidr "/"))))
