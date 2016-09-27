@@ -8,6 +8,7 @@
 ;; Version: 0.2.3
 ;; URL: http://github.org/dotemacs/ipcalc.el
 ;; Keywords: networking tools
+;; Package-Requires: ((cl-lib "0.5"))
 
 ;; This file is NOT part of GNU Emacs
 ;;
@@ -42,6 +43,8 @@
 ;; Usage: evaluate (ipcalc "192.168.0.23/21")
 
 ;;; Code:
+
+(require 'cl-lib)
 
 (defconst ipcalc-cidr-default 32 "CIDR value.")
 
