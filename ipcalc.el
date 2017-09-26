@@ -6,7 +6,7 @@
 ;; License: BSD
 ;; Created: 2012-03-11 17:10
 ;; Version: 0.2.4
-;; URL: http://github.org/dotemacs/ipcalc.el
+;; URL: http://github.com/dotemacs/ipcalc.el
 ;; Keywords: networking tools
 ;; Package-Requires: ((cl-lib "0.5"))
 
