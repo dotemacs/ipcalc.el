@@ -141,6 +141,35 @@
       (setq count (cl-incf count)))
     (concat full-ip (car (last octets)))))
 
+(defun ipcalc-org (ip/cidr)
+  "IP calculator for given IP/CIDR."
+  (interactive)
+  (let* ((ip (car (split-string ip/cidr "/")))
+         (ip-in-binary (ipcalc-octets-as-binary (ipcalc-ip-to-octets ip)))
+         (cidr (car (cdr (split-string ip/cidr "/"))))
+         (cidr-int (string-to-number cidr))
+         (cidr-binary (ipcalc-ones-and-pad cidr-int))
+         (wildcard-binary (ipcalc-invert-binary (ipcalc-ones-and-pad cidr-int)))
+         (wildcard-ip (ipcalc-binary-to-ip wildcard-binary))
+         (netmask (ipcalc-binary-to-ip (ipcalc-invert-binary wildcard-binary)))
+         (net-binary (ipcalc-network ip cidr))
+         (net-ip (ipcalc-binary-to-ip net-binary))
+         (host-max-binary (ipcalc-host-max (ipcalc-network ip cidr) cidr))
+         (host-max-ip (ipcalc-binary-to-ip host-max-binary))
+         (host-min-binary (ipcalc-host+1 (ipcalc-network ip cidr)))
+         (host-min-ip (ipcalc-binary-to-ip host-min-binary))
+         (broadcast-binary (ipcalc-host+1 (ipcalc-host-max net-binary cidr)))
+         (broadcast-ip (ipcalc-binary-to-ip broadcast-binary)))
+    (concat
+     (format "Address:%15s%41s\n" ip ip-in-binary)
+     (format "Netmask:%16s = %2s %34s\n" netmask cidr cidr-binary)
+     (format "Wildcard:%11s%44s\n" wildcard-ip wildcard-binary)
+     (format "=>\nNetwork:%14s%42s\n" net-ip (ipcalc-network ip cidr))
+     (format "HostMin:%14s%42s\n" host-min-ip host-min-binary)
+     (format "HostMax:%16s%40s\n" host-max-ip host-max-binary)
+     (format "Broadcast:%14s%40s\n" broadcast-ip broadcast-binary)
+     (format "Hosts/Net: %d\n" (ipcalc-hosts/net cidr-int)))))
+
 ;;;###autoload
 (defun ipcalc (ip/cidr)
   "IP calculator for given IP/CIDR."
@@ -175,6 +204,6 @@
      (format "Broadcast:%14s%40s\n" broadcast-ip broadcast-binary)
      (format "Hosts/Net: %d\n" (ipcalc-hosts/net cidr-int)))))
 
-(provide 'ipcalc)
+(provide 'ipcalc (ipcalc-org))
 
 ;;; ipcalc.el ends here
