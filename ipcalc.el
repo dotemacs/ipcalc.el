@@ -128,24 +128,24 @@
 (defun ipcalc-binary-to-ip (binary)
   "Convert BINARY to IP address."
   (let* (full-ip
-        (count 0)
-        (1st-octet (substring binary 0 8))
-        (2nd-octet (substring binary 8 16))
-        (3rd-octet (substring binary 16 24))
-        (4th-octet (substring binary 24 32))
-        (octets (mapcar
-                 'ipcalc-bin-to-int
-                 `(,1st-octet ,2nd-octet ,3rd-octet ,4th-octet))))
+         (count 0)
+         (1st-octet (substring binary 0 8))
+         (2nd-octet (substring binary 8 16))
+         (3rd-octet (substring binary 16 24))
+         (4th-octet (substring binary 24 32))
+         (octets (mapcar
+                  'ipcalc-bin-to-int
+                  `(,1st-octet ,2nd-octet ,3rd-octet ,4th-octet))))
     (while (< count 3)
       (setq full-ip (concat full-ip (nth count octets) "."))
       (setq count (cl-incf count)))
     (concat full-ip (car (last octets)))))
 
-;;;###autoload
-(defun ipcalc (ip/cidr)
-  "IP calculator for given IP/CIDR."
-  (interactive "sIP/CIDR: ")
-  (let* ((ip (car (split-string ip/cidr "/")))
+(defun ipcalc-calc (ip/cidr)
+  "Call IPcalc as function without separate buffer."
+  (interactive)
+  (let* (
+         (ip (car (split-string ip/cidr "/")))
          (ip-in-binary (ipcalc-octets-as-binary (ipcalc-ip-to-octets ip)))
          (cidr (car (cdr (split-string ip/cidr "/"))))
          (cidr-int (string-to-number cidr))
@@ -161,11 +161,8 @@
          (host-min-ip (ipcalc-binary-to-ip host-min-binary))
          (broadcast-binary (ipcalc-host+1 (ipcalc-host-max net-binary cidr)))
          (broadcast-ip (ipcalc-binary-to-ip broadcast-binary))
-         (buffer "*ipcalc*"))
-    (if (get-buffer buffer)
-        (kill-buffer buffer))
-    (pop-to-buffer buffer)
-    (insert
+         )
+    (concat
      (format "Address:%15s%41s\n" ip ip-in-binary)
      (format "Netmask:%16s = %2s %34s\n" netmask cidr cidr-binary)
      (format "Wildcard:%11s%44s\n" wildcard-ip wildcard-binary)
@@ -175,6 +172,21 @@
      (format "Broadcast:%14s%40s\n" broadcast-ip broadcast-binary)
      (format "Hosts/Net: %d\n" (ipcalc-hosts/net cidr-int)))))
 
+;;;###autoload
+(defun ipcalc (ip/cidr)
+  "IP calculator for given IP/CIDR."
+  (interactive "sIP/CIDR: ")
+  (let* (
+         (buffer "*ipcalc*")
+         )
+    (if (get-buffer buffer)
+        (kill-buffer buffer))
+
+    (pop-to-buffer buffer)
+    (insert (ipcalc-calc ip/cidr))
+    ))
+
+(provide 'ipcalc-calc)
 (provide 'ipcalc)
 
 ;;; ipcalc.el ends here
