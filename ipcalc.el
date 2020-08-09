@@ -128,14 +128,14 @@
 (defun ipcalc-binary-to-ip (binary)
   "Convert BINARY to IP address."
   (let* (full-ip
-        (count 0)
-        (1st-octet (substring binary 0 8))
-        (2nd-octet (substring binary 8 16))
-        (3rd-octet (substring binary 16 24))
-        (4th-octet (substring binary 24 32))
-        (octets (mapcar
-                 'ipcalc-bin-to-int
-                 `(,1st-octet ,2nd-octet ,3rd-octet ,4th-octet))))
+         (count 0)
+         (1st-octet (substring binary 0 8))
+         (2nd-octet (substring binary 8 16))
+         (3rd-octet (substring binary 16 24))
+         (4th-octet (substring binary 24 32))
+         (octets (mapcar
+                  'ipcalc-bin-to-int
+                  `(,1st-octet ,2nd-octet ,3rd-octet ,4th-octet))))
     (while (< count 3)
       (setq full-ip (concat full-ip (nth count octets) "."))
       (setq count (cl-incf count)))
@@ -145,9 +145,11 @@
 (defun ipcalc (ip/cidr)
   "IP calculator for given IP/CIDR."
   (interactive "sIP/CIDR: ")
-  (let* ((ip (car (split-string ip/cidr "/")))
+  (let* ((split-input (thread-first (replace-regexp-in-string "\\\"" "" ip/cidr)
+                        (split-string "/")))
+         (ip (car split-input))
+         (cidr (cadr split-input))
          (ip-in-binary (ipcalc-octets-as-binary (ipcalc-ip-to-octets ip)))
-         (cidr (car (cdr (split-string ip/cidr "/"))))
          (cidr-int (string-to-number cidr))
          (cidr-binary (ipcalc-ones-and-pad cidr-int))
          (wildcard-binary (ipcalc-invert-binary (ipcalc-ones-and-pad cidr-int)))
