@@ -1,6 +1,8 @@
 
 * IP calculator in Emacs Lisp
 
+[[https://melpa.org/#/ipcalc][https://melpa.org/packages/ipcalc-badge.svg]]
+
 ** Usage
 
 #+begin_src emacs-lisp
