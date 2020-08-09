@@ -145,7 +145,8 @@
 (defun ipcalc (ip/cidr)
   "IP calculator for given IP/CIDR."
   (interactive "sIP/CIDR: ")
-  (let* ((split-input (split-string ip/cidr "/"))
+  (let* ((split-input (thread-first (replace-regexp-in-string "\\\"" "" ip/cidr)
+                        (split-string "/")))
          (ip (car split-input))
          (cidr (cadr split-input))
          (ip-in-binary (ipcalc-octets-as-binary (ipcalc-ip-to-octets ip)))
