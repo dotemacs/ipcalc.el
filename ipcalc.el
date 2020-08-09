@@ -141,11 +141,11 @@
       (setq count (cl-incf count)))
     (concat full-ip (car (last octets)))))
 
+;;;###autoload
 (defun ipcalc-calc (ip/cidr)
   "Call IPcalc as function without separate buffer."
   (interactive)
-  (let* (
-         (ip (car (split-string ip/cidr "/")))
+  (let* ((ip (car (split-string ip/cidr "/")))
          (ip-in-binary (ipcalc-octets-as-binary (ipcalc-ip-to-octets ip)))
          (cidr (car (cdr (split-string ip/cidr "/"))))
          (cidr-int (string-to-number cidr))
@@ -160,8 +160,7 @@
          (host-min-binary (ipcalc-host+1 (ipcalc-network ip cidr)))
          (host-min-ip (ipcalc-binary-to-ip host-min-binary))
          (broadcast-binary (ipcalc-host+1 (ipcalc-host-max net-binary cidr)))
-         (broadcast-ip (ipcalc-binary-to-ip broadcast-binary))
-         )
+         (broadcast-ip (ipcalc-binary-to-ip broadcast-binary)))
     (concat
      (format "Address:%15s%41s\n" ip ip-in-binary)
      (format "Netmask:%16s = %2s %34s\n" netmask cidr cidr-binary)
@@ -176,17 +175,12 @@
 (defun ipcalc (ip/cidr)
   "IP calculator for given IP/CIDR."
   (interactive "sIP/CIDR: ")
-  (let* (
-         (buffer "*ipcalc*")
-         )
-    (if (get-buffer buffer)
-        (kill-buffer buffer))
-
+  (let* ((buffer "*ipcalc*"))
+    (when (get-buffer buffer)
+      (kill-buffer buffer))
     (pop-to-buffer buffer)
-    (insert (ipcalc-calc ip/cidr))
-    ))
+    (insert (ipcalc-calc ip/cidr))))
 
-(provide 'ipcalc-calc)
 (provide 'ipcalc)
 
 ;;; ipcalc.el ends here
