@@ -128,14 +128,14 @@
 (defun ipcalc-binary-to-ip (binary)
   "Convert BINARY to IP address."
   (let* (full-ip
-        (count 0)
-        (1st-octet (substring binary 0 8))
-        (2nd-octet (substring binary 8 16))
-        (3rd-octet (substring binary 16 24))
-        (4th-octet (substring binary 24 32))
-        (octets (mapcar
-                 'ipcalc-bin-to-int
-                 `(,1st-octet ,2nd-octet ,3rd-octet ,4th-octet))))
+         (count 0)
+         (1st-octet (substring binary 0 8))
+         (2nd-octet (substring binary 8 16))
+         (3rd-octet (substring binary 16 24))
+         (4th-octet (substring binary 24 32))
+         (octets (mapcar
+                  'ipcalc-bin-to-int
+                  `(,1st-octet ,2nd-octet ,3rd-octet ,4th-octet))))
     (while (< count 3)
       (setq full-ip (concat full-ip (nth count octets) "."))
       (setq count (cl-incf count)))
