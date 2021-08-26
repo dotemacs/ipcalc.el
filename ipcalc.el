@@ -47,6 +47,7 @@
 (require 'cl-lib)
 
 (defconst ipcalc--cidr-default 32 "CIDR value.")
+(defconst ipcalc--output-buffer-default "*ipcalc*" "Buffer name for outputting results.")
 
 (defun ipcalc-int-to-bin-string (n &optional length)
   ;; 08 Jun 1997 Jamie Zawinski <jwz@netscape.com> comp.emacs
@@ -142,8 +143,9 @@
     (concat full-ip (car (last octets)))))
 
 ;;;###autoload
-(defun ipcalc (ip/cidr)
-  "IP calculator for given IP/CIDR."
+(defun ipcalc (ip/cidr &optional buffer)
+  "IP calculator for given IP/CIDR. Insert the output in the buffer
+BUFFER (by default, the buffer `ipcalc--output-buffer-default')."
   (interactive "sIP/CIDR: ")
   (let* ((split-input (thread-first (replace-regexp-in-string "\\\"" "" ip/cidr)
                         (split-string "/")))
@@ -163,8 +165,8 @@
          (host-min-ip (ipcalc-binary-to-ip host-min-binary))
          (broadcast-binary (ipcalc-host+1 (ipcalc-host-max net-binary cidr)))
          (broadcast-ip (ipcalc-binary-to-ip broadcast-binary))
-         (buffer "*ipcalc*"))
-    (if (get-buffer buffer)
+         (buffer (or buffer ipcalc--output-buffer-default)))
+    (if (and (string-equal buffer ipcalc--output-buffer-default) (get-buffer buffer))
         (kill-buffer buffer))
     (pop-to-buffer buffer)
     (insert
@@ -176,6 +178,13 @@
      (format "HostMax: %17s%40s\n" host-max-ip host-max-binary)
      (format "Broadcast: %15s%40s\n" broadcast-ip broadcast-binary)
      (format "Hosts/Net: %d\n" (ipcalc-hosts/net cidr-int)))))
+
+;;;###autoload
+(defun ipcalc-current-buffer (ip/cidr)
+  "IP calculator for given IP/CIDR. Inserts the output in the
+current buffer."
+  (interactive "sIP/CIDR: ")
+  (ipcalc ip/cidr (buffer-name)))
 
 (provide 'ipcalc)
 
