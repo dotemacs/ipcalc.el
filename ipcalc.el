@@ -116,7 +116,7 @@
         (max (- ipcalc--cidr-default 1)))
     (while (< count max)
       (aset ip count ?1)
-      (setq count(cl-incf count)))
+      (setq count (cl-incf count)))
     ip))
 
 (defun ipcalc-hosts/net (num)
