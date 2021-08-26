@@ -80,7 +80,8 @@
       (error "not correct IP format"))))
 
 (defun ipcalc-ones-and-pad (num)
-  "Return 1's equal to NUM and pad the rest up to 32."
+  "Return 1's equal to NUM and pad the rest up to
+`ipcalc--cidr-default'."
   (unless (and (<= num ipcalc--cidr-default) (> num 0))
     (error "Wrong value provided"))
   (concat (make-string num ?1)
