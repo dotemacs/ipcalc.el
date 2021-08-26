@@ -31,3 +31,9 @@ If using *use-package*:
   (use-package ipcalc
     :ensure t)
 #+END_SRC
+
+** Test
+
+To execute tests, either open the file ~./ipcalc-tests.el~ and execute
+an ~(eval-buffer)~, or run them in batch mode with the command ~make
+test~
