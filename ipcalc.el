@@ -77,7 +77,7 @@
   (let ((octets (split-string ip "\\.")))
     (if (= 4 (length octets))
         octets
-      (message "not correct IP format"))))
+      (error "not correct IP format"))))
 
 (defun ipcalc-ones-and-pad (num)
   "Return 1's equal to NUM and pad the rest up to 32."
