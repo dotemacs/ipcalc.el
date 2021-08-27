@@ -8,47 +8,108 @@
   "Test the conversion of a integer to a binary"
   (should (equal "00000000" (ipcalc-int-to-bin-string 0)))
   (should (equal "00000001" (ipcalc-int-to-bin-string 1)))
+  (should (equal "01010101" (ipcalc-int-to-bin-string 85)))
+  (should (equal "10101010" (ipcalc-int-to-bin-string 170)))
   (should (equal "11111111" (ipcalc-int-to-bin-string 255))))
 
 (ert-deftest network-test ()
   "Test the network function"
   (should (string-equal (ipcalc-network "192.168.0.23" "21")
-                        "11000000101010000000000000000000")))
+                        "11000000101010000000000000000000"))
+  (should (string-equal (ipcalc-network "128.0.0.0" "1")
+                        "10000000000000000000000000000000"))
+  (should (string-equal (ipcalc-network "0.0.0.0" "12")
+                        "00000000000000000000000000000000"))
+  (should (string-equal (ipcalc-network "255.255.255.255" "12")
+                        "11111111111100000000000000000000"))
+  (should (string-equal (ipcalc-network "255.255.255.255" "16")
+                        "11111111111111110000000000000000"))
+  (should (string-equal (ipcalc-network "255.255.255.255" "32")
+                        "11111111111111111111111111111111"))
+  (should (string-equal (ipcalc-network "170.170.170.170" "16")
+                        "10101010101010100000000000000000"))
+  (should (string-equal (ipcalc-network "170.170.170.170" "16")
+                        "10101010101010100000000000000000"))
+  (should-error (ipcalc-network "123.123.123" "0"))
+  (should-error (ipcalc-network "123.123.123.123.123" "512")))
+
 
 (ert-deftest octets-as-binary-test ()
   (should (string-equal (ipcalc-octets-as-binary '("192" "168" "0" "23"))
-                        "11000000101010000000000000010111")))
+                        "11000000101010000000000000010111"))
+  (should (string-equal (ipcalc-octets-as-binary '("1" "1" "1" "1"))
+                        "00000001000000010000000100000001"))
+  (should (string-equal (ipcalc-octets-as-binary '("170" "170" "170" "170"))
+                        "10101010101010101010101010101010"))
+  (should (string-equal (ipcalc-octets-as-binary '("85" "85" "85" "85"))
+                        "01010101010101010101010101010101"))
+  (should (string-equal (ipcalc-octets-as-binary '("255" "255" "255" "255"))
+                        "11111111111111111111111111111111")))
 
 (ert-deftest ip-to-octets-test ()
   "That a IP address gets split into octets"
   (should (equal (ipcalc-ip-to-octets "192.168.0.23")
-                 '("192" "168" "0" "23"))))
+                 '("192" "168" "0" "23")))
+  (should (equal (ipcalc-ip-to-octets "1.1.1.1")
+                 '("1" "1" "1" "1")))
+  (should-error (ipcalc-ip-to-octets "1.1.1"))
+  (should-error (ipcalc-ip-to-octets "1.1.1.1.1")))
 
 (ert-deftest ones-and-pad-test ()
   "That padding occurs for a given value"
   (should (string-equal "10000000000000000000000000000000" (ipcalc-ones-and-pad 1)))
-  (should (string-equal "11111111111111111111111111111110" (ipcalc-ones-and-pad 31))))
+  (should (string-equal "11111111111111111111111111111110" (ipcalc-ones-and-pad 31)))
+  (should (string-equal "11111111111111111111111111111111" (ipcalc-ones-and-pad 32)))
+  (should-error (ipcalc-ones-and-pad 33))
+  (should-error (ipcalc-ones-and-pad 0)))
 
 (ert-deftest invert-binary-test ()
   "Tests that it inverts 1s & 0s"
   (should (string-equal (ipcalc-invert-binary "1") "0"))
-  (should (string-equal (ipcalc-invert-binary "0") "1")))
+  (should (string-equal (ipcalc-invert-binary "0") "1"))
+  (should (string-equal (ipcalc-invert-binary "00000000000000000000000000000000") "11111111111111111111111111111111"))
+  (should (string-equal (ipcalc-invert-binary "11111111111111111111111111111111") "00000000000000000000000000000000"))
+  (should (string-equal (ipcalc-invert-binary "00000000000000001111111111111111") "11111111111111110000000000000000"))
+  (should (string-equal (ipcalc-invert-binary "11111111111111110000000000000000") "00000000000000001111111111111111"))
+  (should (string-equal (ipcalc-invert-binary "10101010101010101010101010101010") "01010101010101010101010101010101"))
+  (should (string-equal (ipcalc-invert-binary "01010101010101010101010101010101") "10101010101010101010101010101010")))
 
 
 (ert-deftest host+1-test ()
   "Add 1 to an binary number"
   (should (equal (ipcalc-host+1 "11000000101010000000000000000000")
-                 "11000000101010000000000000000001")))
+                 "11000000101010000000000000000001"))
+  (should (equal (ipcalc-host+1 "00000000000000000000000000000000")
+                 "00000000000000000000000000000001"))
+  (should (equal (ipcalc-host+1 "00000000000000000000000000000001")
+                 "00000000000000000000000000000001"))
+  (should (equal (ipcalc-host+1 "01111111111111111111111111111110")
+                 "01111111111111111111111111111111")))
 
 (ert-deftest host-max-test ()
   "Return the maximum host as a binary value"
   (should (equal (ipcalc-host-max "11000000101010000000000000000000" "21")
-                 "11000000101010000000011111111110")))
+                 "11000000101010000000011111111110"))
+  (should (equal (ipcalc-host-max "00000000000000000000000000000000" "16")
+                 "00000000000000001111111111111110"))
+  (should (equal (ipcalc-host-max "11111111111111111111111111111111" "16")
+                 "11111111111111111111111111111111")))
+
 
 (ert-deftest binary-to-ip-test ()
   "Convert a IP in binary format to four octets separated by dots"
   (should (equal (ipcalc-binary-to-ip "11000000101010000000000000010111")
-                 "192.168.0.23")))
+                 "192.168.0.23"))
+  (should (equal (ipcalc-binary-to-ip "00000001000000010000000100000001")
+                 "1.1.1.1"))
+  (should (equal (ipcalc-binary-to-ip "10101010101010101010101010101010")
+                 "170.170.170.170"))
+  (should (equal (ipcalc-binary-to-ip "00000000000000000000000000000000")
+                 "0.0.0.0"))
+  ;; I think this should be an error
+  (should (equal (ipcalc-binary-to-ip "1111111111111111111111111111111100000000000000000000000000000000")
+                 "255.255.255.255"))
+  (should-error (ipcalc-binary-to-ip "0000000000000000")))
 
 (ert-deftest ipcalc-test ()
   "Check that the output should be correctly formatted"
