@@ -105,7 +105,8 @@
      (make-string (- ipcalc--cidr-default cidr-as-int) ?0))))
 
 (defun ipcalc-host+1 (binary-ip)
-  "Increment the given BINARY-IP by 1."
+  "Increment the given BINARY-IP by 1, if even. Leave unchanged
+if odd."
   (let ((tmp binary-ip))
     (aset tmp (- ipcalc--cidr-default 1) ?1)
     tmp))
