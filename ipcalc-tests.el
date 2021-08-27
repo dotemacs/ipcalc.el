@@ -67,6 +67,21 @@ Hosts/Net: 254
 "))
       (kill-buffer temp-buffer-name))))
 
+(ert-deftest ipcalc-test-*ipcalc*-buffer ()
+  "Check that the output should be correctly formatted"
+  (ipcalc "192.168.1.1/24")
+  (with-current-buffer (get-buffer-create "*ipcalc*")
+    (should (equal (buffer-string) "Address:       192.168.1.1        11000000101010000000000100000001
+Netmask:     255.255.255.0 = 24   11111111111111111111111100000000
+Wildcard:        0.0.0.255        00000000000000000000000011111111
+=>
+Network:       192.168.1.0        11000000101010000000000100000000
+HostMin:       192.168.1.1        11000000101010000000000100000001
+HostMax:     192.168.1.254        11000000101010000000000111111110
+Broadcast:   192.168.1.255        11000000101010000000000111111111
+Hosts/Net: 254
+"))))
+
 (ert-deftest ipcalc-current-buffer-test ()
   "Check that the output should be correctly formatted"
   (let ((temp-buffer-name (make-temp-name "ipcalc-tests-")))
