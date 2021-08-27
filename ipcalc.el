@@ -53,8 +53,8 @@
   ;; 08 Jun 1997 Jamie Zawinski <jwz@netscape.com> comp.emacs
   "Convert integer N to bit string (LENGTH, default 8)."
   (let* ((i  0)
-	 (len (or length 8))
-	 (s (make-string len ?0)))
+         (len (or length 8))
+         (s (make-string len ?0)))
     (while (< i len)
       (if (not (zerop (logand n (ash 1 i))))
           (aset s (- len (1+ i)) ?1))
@@ -64,13 +64,13 @@
 (defun ipcalc-octets-as-binary (list-of-octets)
   "Return LIST-OF-OCTETS as a single binary string."
   (let ((binary ""))
-  (while list-of-octets
-    (setq binary
-          (concat binary
-                  (ipcalc-int-to-bin-string
-                   (string-to-number (car list-of-octets)))))
+    (while list-of-octets
+      (setq binary
+            (concat binary
+                    (ipcalc-int-to-bin-string
+                     (string-to-number (car list-of-octets)))))
       (setq list-of-octets (cdr list-of-octets)))
-  binary))
+    binary))
 
 (defun ipcalc-ip-to-octets (ip)
   "Split IP address and return the octets."
@@ -93,8 +93,8 @@
   (credit: the simpler version below re-writen by pjb from #emacs
           on freenode)"
   (cl-map 'string
-       (lambda (ch) (aref "10" (cl-position ch "01")))
-       (cl-remove-if-not (lambda (ch) (cl-position ch "01")) num)))
+          (lambda (ch) (aref "10" (cl-position ch "01")))
+          (cl-remove-if-not (lambda (ch) (cl-position ch "01")) num)))
 
 (defun ipcalc-network (ip cidr)
   "Takes IP & CIDR and produces network."
