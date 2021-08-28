@@ -186,6 +186,18 @@ else, return VALUE."
          (error "Wrong wildcard format")
        cidr))))
 
+(defun ipcalc-ipcidr-to-network (ip/cidr)
+  "Convert an IP/CIDR to the corresponding network."
+  (interactive "sIP/CIDR: ")
+  (ipcalc-insert-or-return-value
+   (let* ((split (split-string ip/cidr "/"))
+          (ip (car split))
+          (cidr (string-to-number (cadr split))))
+     (ipcalc-binary-to-ip
+      (concat
+       (substring (ipcalc-ip-to-binary ip) 0 cidr)
+       (make-string (- ipcalc--cidr-default cidr) ?0))))))
+
 
 ;;;###autoload
 (defun ipcalc (ip/cidr &optional buffer)

@@ -180,6 +180,17 @@
   (should (equal (ipcalc-wildcard-to-cidr "0.0.0.0") 32))
   (should (equal (ipcalc-wildcard-to-cidr "255.255.255.255") 0)))
 
+(ert-deftest ipcidr-to-network-test ()
+  "Test that a IP/CIDR value is correctly converted to a network."
+  (should (equal (ipcalc-ipcidr-to-network "10.59.92.199/8")
+                 "10.0.0.0"))
+  (should (equal (ipcalc-ipcidr-to-network "172.16.48.185/12")
+                 "172.16.0.0"))
+  (should (equal (ipcalc-ipcidr-to-network "192.168.73.43/16")
+                 "192.168.0.0"))
+  (should (equal (ipcalc-ipcidr-to-network "192.168.0.23/27")
+                 "192.168.0.0")))
+
 (ert-deftest ipcalc-test ()
   "Check that the output should be correctly formatted"
   (let ((temp-buffer-name (make-temp-name "ipcalc-tests-")))
