@@ -132,8 +132,8 @@ if odd."
   "If called with given CU-ARG C-u argument (default: '(4)), insert value in current buffer,
 else, return VALUE."
   `(if (equal current-prefix-arg (or ,cu-arg '(4)))
-       (insert (format "%s" ,value))
-     ,value))
+       (insert (format "%s" (let ((current-prefix-arg nil)) ,value)))
+     (let ((current-prefix-arg nil)) ,value)))
 
 (defun ipcalc-ip-to-binary (ip)
   "Convert IP address to binary string."
