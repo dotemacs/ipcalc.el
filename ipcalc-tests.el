@@ -172,7 +172,7 @@
   (should-error (ipcalc-cidr-to-wildcard 33)))
 
 (ert-deftest wildcard-to-cidr-test ()
-  "Tets that a wildcard ip is converted to a correct cidr value"
+  "Test that a wildcard ip is converted to a correct cidr value"
   (should (equal (ipcalc-wildcard-to-cidr "0.255.255.255") 8))
   (should (equal (ipcalc-wildcard-to-cidr "0.15.255.255") 12))
   (should (equal (ipcalc-wildcard-to-cidr "0.0.255.255") 16))
