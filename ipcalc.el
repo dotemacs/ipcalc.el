@@ -253,6 +253,34 @@ else, return VALUE."
    (if (> cidr 30) 0
      (- (expt 2 (- ipcalc--cidr-default cidr)) 2))))
 
+(defun ipcalc-next-ip (ip &optional ip/cidr)
+  "Given an IP calculate the next valid one. If an IP/CIDR is
+given, the function will throw an error when generating an IP
+outside the network range."
+  (interactive "sIP: ")
+  (ipcalc-insert-or-return-value
+   (let ((next-ip
+          (ipcalc-binary-to-ip
+           (ipcalc-int-to-bin-string
+            (1+
+             (string-to-number
+              (ipcalc-bin-to-int
+               (ipcalc-ip-to-binary ip))))
+            32 ))))
+     (if (and ip/cidr
+              (equal next-ip (ipcalc-ipcidr-to-broadcast ip/cidr)))
+         (error "Next IP outside of network")
+       next-ip))))
+
+(defun ipcalc-ipcidr-to-next-ip (ip/cidr)
+  "Given an IP/CIDR, generate the next IP of the network.
+
+Will throw an error if the generated IP is outside the network."
+  (interactive "sIP/CIDR: ")
+  (ipcalc-insert-or-return-value
+   (let ((cidr (cadr (split-string ip/cidr "/"))))
+     (format "%s/%s" (ipcalc-next-ip ip/cidr ip/cidr) cidr))))
+
 
 ;;;###autoload
 (defun ipcalc (ip/cidr &optional buffer)
