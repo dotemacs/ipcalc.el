@@ -285,7 +285,10 @@ Will throw an error if the generated IP is outside the network."
 ;;;###autoload
 (defun ipcalc (ip/cidr &optional buffer)
   "IP calculator for given IP/CIDR. Insert the output in the buffer
-BUFFER (by default, the buffer `ipcalc--output-buffer-default')."
+BUFFER (by default, the buffer `ipcalc--output-buffer-default').
+
+If called with any universal argument, insert the result in the
+current buffer."
   (interactive "sIP/CIDR: ")
   (let* ((split-input (thread-first (replace-regexp-in-string "\\\"" "" ip/cidr)
                         (split-string "/")))
@@ -306,9 +309,10 @@ BUFFER (by default, the buffer `ipcalc--output-buffer-default')."
          (broadcast-binary (ipcalc-host+1 (ipcalc-host-max net-binary cidr)))
          (broadcast-ip (ipcalc-binary-to-ip broadcast-binary))
          (buffer (or buffer ipcalc--output-buffer-default)))
-    (if (and (string-equal buffer ipcalc--output-buffer-default) (get-buffer buffer))
-        (kill-buffer buffer))
-    (pop-to-buffer buffer)
+    (unless current-prefix-arg
+      (if (and (string-equal buffer ipcalc--output-buffer-default) (get-buffer buffer))
+          (kill-buffer buffer))
+      (pop-to-buffer buffer))
     (insert
      (format "Address: %17s%40s\n" ip ip-in-binary)
      (format "Netmask: %17s = %2s %34s\n" netmask cidr cidr-binary)
