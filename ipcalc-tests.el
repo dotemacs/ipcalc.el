@@ -4,6 +4,13 @@
 (load-file "ipcalc.el")
 (require 'ipcalc)
 
+
+(defun ipcalc-random-ip ()
+  "Generate a random valid ip."
+  (let ((ip (list (random 255) (random 255) (random 255) (random 255))))
+    (mapconcat 'number-to-string ip ".")))
+
+
 (ert-deftest int-to-bin-string-test ()
   "Test the conversion of a integer to a binary"
   (should (equal "00000000" (ipcalc-int-to-bin-string 0)))
@@ -95,9 +102,22 @@
   (should (equal (ipcalc-host-max "11111111111111111111111111111111" "16")
                  "11111111111111111111111111111111")))
 
+(ert-deftest ip-to-binary-test ()
+  "Convert an IP to a binary string"
+  (should (equal (ipcalc-ip-to-binary "192.168.0.23")
+                 "11000000101010000000000000010111"))
+  (should (equal (ipcalc-ip-to-binary "1.1.1.1")
+                 "00000001000000010000000100000001"))
+  (should (equal (ipcalc-ip-to-binary "170.170.170.170")
+                 "10101010101010101010101010101010"))
+  (should (equal (ipcalc-ip-to-binary "0.0.0.0")
+                 "00000000000000000000000000000000"))
+  (should (equal (ipcalc-ip-to-binary "255.255.255.255")
+                 "11111111111111111111111111111111"))
+  (should-error (ipcalc-ip-binary-to "1.1.1")))
 
 (ert-deftest binary-to-ip-test ()
-  "Convert a IP in binary format to four octets separated by dots"
+  "Convert an IP in binary format to a IP string"
   (should (equal (ipcalc-binary-to-ip "11000000101010000000000000010111")
                  "192.168.0.23"))
   (should (equal (ipcalc-binary-to-ip "00000001000000010000000100000001")
@@ -110,6 +130,13 @@
   (should (equal (ipcalc-binary-to-ip "1111111111111111111111111111111100000000000000000000000000000000")
                  "255.255.255.255"))
   (should-error (ipcalc-binary-to-ip "0000000000000000")))
+
+(ert-deftest ip-to-binary-is-reversible-test ()
+  "Test that binary-to-ip is the reverse of ip-to-binary"
+  (dotimes (number 10)
+    (let ((ip (ipcalc-random-ip)))
+      (should (equal (ipcalc-binary-to-ip (ipcalc-ip-to-binary ip))
+                     ip)))))
 
 (ert-deftest ipcalc-test ()
   "Check that the output should be correctly formatted"
