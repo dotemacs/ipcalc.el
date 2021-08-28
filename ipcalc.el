@@ -234,6 +234,25 @@ else, return VALUE."
          (31 "1")
          (t "0")))))))
 
+(defun ipcalc-ipcidr-to-broadcast (ip/cidr)
+  "Convert an IP/CIDR to the corresponding broadcast direction."
+  (interactive "sIP/CIDR: ")
+  (ipcalc-insert-or-return-value
+   (let* ((split (split-string ip/cidr "/"))
+          (ip (car split))
+          (cidr (string-to-number (cadr split))))
+     (ipcalc-binary-to-ip
+      (concat
+       (substring (ipcalc-ip-to-binary ip) 0 cidr)
+       (make-string (- ipcalc--cidr-default cidr) ?1))))))
+
+(defun ipcalc-cidr-to-hosts/net (cidr)
+  "Return the number of hosts in the network from the CIDR."
+  (interactive "nCIDR: ")
+  (ipcalc-insert-or-return-value
+   (if (> cidr 30) 0
+     (- (expt 2 (- ipcalc--cidr-default cidr)) 2))))
+
 
 ;;;###autoload
 (defun ipcalc (ip/cidr &optional buffer)

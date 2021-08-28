@@ -229,6 +229,23 @@
   (should (equal (ipcalc-ipcidr-to-host-max "192.168.170.0/25")
                  "192.168.170.126")))
 
+(ert-deftest ipcidr-to-broadcast-test ()
+  "Test that the number og hosts per network is correctly calculated"
+  (should (equal (ipcalc-ipcidr-to-broadcast "192.168.0.0/24") "192.168.0.255"))
+  (should (equal (ipcalc-ipcidr-to-broadcast "10.0.0.0/8") "10.255.255.255"))
+  (should (equal (ipcalc-ipcidr-to-broadcast "192.168.195.0/25") "192.168.195.127"))
+  (should (equal (ipcalc-ipcidr-to-broadcast "1.1.1.1/16") "1.1.255.255")))
+
+(ert-deftest cidr-to-hosts/net-test ()
+  "Test that the number og hosts per network is correctly calculated"
+  (should (equal (ipcalc-cidr-to-hosts/net 24) 254))
+  (should (equal  (ipcalc-cidr-to-hosts/net 1) 2147483646))
+  (should (equal  (ipcalc-cidr-to-hosts/net 16) 65534))
+
+  ;; Special cases
+  (should (equal (ipcalc-cidr-to-hosts/net 31) 0))
+  (should (equal (ipcalc-cidr-to-hosts/net 32) 0)))
+
 (ert-deftest ipcalc-test ()
   "Check that the output should be correctly formatted"
   (let ((temp-buffer-name (make-temp-name "ipcalc-tests-")))
