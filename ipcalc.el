@@ -198,6 +198,42 @@ else, return VALUE."
        (substring (ipcalc-ip-to-binary ip) 0 cidr)
        (make-string (- ipcalc--cidr-default cidr) ?0))))))
 
+(defun ipcalc-ipcidr-to-host-min (ip/cidr)
+  "Given a IP/CIDR, get the first possible ip of the network."
+  (interactive "sIP/CIDR: ")
+  (ipcalc-insert-or-return-value
+   (let* ((split (split-string ip/cidr "/"))
+          (ip (car split))
+          (cidr (string-to-number (cadr split))))
+     (ipcalc-binary-to-ip
+      (concat
+       (substring (ipcalc-ip-to-binary ip) 0 cidr)
+       (cl-case cidr
+         (32 "")
+         (t (make-string (- ipcalc--cidr-default cidr 1) ?0)))
+       (cl-case cidr
+         (32 "")
+         (31 "0")
+         (t "1")))))))
+
+(defun ipcalc-ipcidr-to-host-max (ip/cidr)
+  "Given a IP/CIDR, get the last possible ip of the network."
+  (interactive "sIP/CIDR: ")
+  (ipcalc-insert-or-return-value
+   (let* ((split (split-string ip/cidr "/"))
+          (ip (car split))
+          (cidr (string-to-number (cadr split))))
+     (ipcalc-binary-to-ip
+      (concat
+       (substring (ipcalc-ip-to-binary ip) 0 cidr)
+       (cl-case cidr
+         (32 "")
+         (t (make-string (- ipcalc--cidr-default cidr 1) ?1)))
+       (cl-case cidr
+         (32 "")
+         (31 "1")
+         (t "0")))))))
+
 
 ;;;###autoload
 (defun ipcalc (ip/cidr &optional buffer)
