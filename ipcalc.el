@@ -128,6 +128,13 @@ if odd."
   "Convert binary value BIN to integer."
   (int-to-string (read (concat "#b" bin))))
 
+(defmacro ipcalc-insert-or-return-value (value &optional cu-arg)
+  "If called with given CU-ARG C-u argument (default: '(4)), insert value in current buffer,
+else, return VALUE."
+  `(if (equal current-prefix-arg (or ,cu-arg '(4)))
+       (insert (format "%s" ,value))
+     ,value))
+
 (defun ipcalc-ip-to-binary (ip)
   "Convert IP address to binary string."
   (mapconcat 'ipcalc-int-to-bin-string
@@ -143,6 +150,21 @@ if odd."
          (4th-octet (substring binary 24 32)))
     (mapconcat 'ipcalc-bin-to-int
                `(,1st-octet ,2nd-octet ,3rd-octet ,4th-octet) ".")))
+
+(defun ipcalc-cidr-to-mask (cidr)
+  "Convert a CIDR value to a netmask."
+  (interactive "nCIDR: ")
+  (ipcalc-insert-or-return-value
+   (ipcalc-binary-to-ip (ipcalc-ones-and-pad cidr))))
+
+(defun ipcalc-mask-to-cidr (mask)
+  "Convert a MASK to a cidr value."
+  (interactive "sMASK: ")
+  (ipcalc-insert-or-return-value
+   (let* ((split (split-string (ipcalc-ip-to-binary mask) "0")))
+     (if (delete "" (cdr split))
+         (error "Invalid network mask")
+       (length (car split))))))
 
 
 ;;;###autoload

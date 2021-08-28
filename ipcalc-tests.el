@@ -138,6 +138,29 @@
       (should (equal (ipcalc-binary-to-ip (ipcalc-ip-to-binary ip))
                      ip)))))
 
+(ert-deftest cidr-to-mask-test ()
+  "Test that cidr-to-mask is correct"
+  (should (equal (ipcalc-cidr-to-mask 8) "255.0.0.0"))
+  (should (equal (ipcalc-cidr-to-mask 12) "255.240.0.0"))
+  (should (equal (ipcalc-cidr-to-mask 16) "255.255.0.0"))
+  (should (equal (ipcalc-cidr-to-mask 24) "255.255.255.0"))
+  (should (equal (ipcalc-cidr-to-mask 17) "255.255.128.0"))
+  (should (equal (ipcalc-cidr-to-mask 32) "255.255.255.255"))
+  (should-error (ipcalc-cidr-to-mask 0))
+  (should-error (ipcalc-cidr-to-mask -1))
+  (should-error (ipcalc-cidr-to-mask 40)))
+
+(ert-deftest mask-to-cidr-test ()
+  "Test that mask-to-cidr is correct"
+  (should (equal (ipcalc-mask-to-cidr "255.0.0.0") 8))
+  (should (equal (ipcalc-mask-to-cidr "255.240.0.0") 12))
+  (should (equal (ipcalc-mask-to-cidr "255.255.0.0") 16))
+  (should (equal (ipcalc-mask-to-cidr "255.255.255.0") 24))
+  (should (equal (ipcalc-mask-to-cidr "255.255.128.0") 17))
+  (should (equal (ipcalc-mask-to-cidr "255.255.255.255") 32))
+  (should (equal (ipcalc-mask-to-cidr "0.0.0.0") 0))
+  (should-error (ipcalc-mask-to-cidr "255.170.0.0")))
+
 (ert-deftest ipcalc-test ()
   "Check that the output should be correctly formatted"
   (let ((temp-buffer-name (make-temp-name "ipcalc-tests-")))
