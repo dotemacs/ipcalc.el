@@ -281,6 +281,22 @@ Will throw an error if the generated IP is outside the network."
    (let ((cidr (cadr (split-string ip/cidr "/"))))
      (format "%s/%s" (ipcalc-next-ip ip/cidr ip/cidr) cidr))))
 
+(defun ipcalc-alist (ip/cidr)
+  "Given an IP/CIDR, calculate all the derived values and return
+them in an alist."
+  (let* ((split (split-string ip/cidr "/"))
+         (ip (car split))
+         (cidr (string-to-number (cadr split))))
+    `((:ip . ,ip)
+      (:cidr . ,cidr)
+      (:netmask . ,(ipcalc-ipcidr-to-network ip/cidr))
+      (:wildcard . ,(ipcalc-cidr-to-wildcard cidr))
+      (:network . ,(ipcalc-ipcidr-to-network ip/cidr))
+      (:host-min . ,(ipcalc-ipcidr-to-host-min ip/cidr))
+      (:host-max . ,(ipcalc-ipcidr-to-host-max ip/cidr))
+      (:broadcast . ,(ipcalc-ipcidr-to-broadcast ip/cidr))
+      (:hosts/net . ,(ipcalc-cidr-to-hosts/net cidr)))))
+
 
 ;;;###autoload
 (defun ipcalc (ip/cidr &optional buffer)
