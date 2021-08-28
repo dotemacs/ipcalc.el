@@ -161,6 +161,25 @@
   (should (equal (ipcalc-mask-to-cidr "0.0.0.0") 0))
   (should-error (ipcalc-mask-to-cidr "255.170.0.0")))
 
+(ert-deftest cidr-to-wildcard-test ()
+  "Tets that a cidr value is converted to a correct wildcard"
+  (should (equal (ipcalc-cidr-to-wildcard 8) "0.255.255.255"))
+  (should (equal (ipcalc-cidr-to-wildcard 12) "0.15.255.255"))
+  (should (equal (ipcalc-cidr-to-wildcard 16) "0.0.255.255"))
+  (should (equal (ipcalc-cidr-to-wildcard 24) "0.0.0.255"))
+  (should (equal (ipcalc-cidr-to-wildcard 32) "0.0.0.0"))
+  (should-error (ipcalc-cidr-to-wildcard 0))
+  (should-error (ipcalc-cidr-to-wildcard 33)))
+
+(ert-deftest wildcard-to-cidr-test ()
+  "Tets that a wildcard ip is converted to a correct cidr value"
+  (should (equal (ipcalc-wildcard-to-cidr "0.255.255.255") 8))
+  (should (equal (ipcalc-wildcard-to-cidr "0.15.255.255") 12))
+  (should (equal (ipcalc-wildcard-to-cidr "0.0.255.255") 16))
+  (should (equal (ipcalc-wildcard-to-cidr "0.0.0.255") 24))
+  (should (equal (ipcalc-wildcard-to-cidr "0.0.0.0") 32))
+  (should (equal (ipcalc-wildcard-to-cidr "255.255.255.255") 0)))
+
 (ert-deftest ipcalc-test ()
   "Check that the output should be correctly formatted"
   (let ((temp-buffer-name (make-temp-name "ipcalc-tests-")))

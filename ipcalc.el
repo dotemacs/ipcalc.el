@@ -166,6 +166,26 @@ else, return VALUE."
          (error "Invalid network mask")
        (length (car split))))))
 
+(defun ipcalc-cidr-to-wildcard (cidr)
+  "Convert a CIDR value to a wildcard."
+  (interactive "nCIDR: ")
+  (if (or (eq 0 cidr) (< 32 cidr)) (error "Invalid CIDR"))
+  (ipcalc-insert-or-return-value
+   (ipcalc-binary-to-ip
+    (concat
+     (make-string cidr ?0)
+     (make-string (- ipcalc--cidr-default cidr) ?1)))))
+
+(defun ipcalc-wildcard-to-cidr (wildcard)
+  "Convert a WILDCARD mask to a cidr."
+  (interactive "sWILDCARD: ")
+  (ipcalc-insert-or-return-value
+   (let* ((split (split-string (ipcalc-ip-to-binary wildcard) "1"))
+          (cidr (length (car split))))
+     (if (delete "" (cdr split))
+         (error "Wrong wildcard format")
+       cidr))))
+
 
 ;;;###autoload
 (defun ipcalc (ip/cidr &optional buffer)
