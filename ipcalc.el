@@ -128,6 +128,18 @@ if odd."
   "Convert binary value BIN to integer."
   (int-to-string (read (concat "#b" bin))))
 
+(defmacro ipcalc-insert-or-return-value (value &optional cu-arg)
+  "If called with given CU-ARG C-u argument (default: '(4)), insert value in current buffer,
+else, return VALUE."
+  `(if (and (interactive-p) (equal current-prefix-arg (or ,cu-arg '(4))))
+       (insert (format "%s" ,value))
+     ,value))
+
+(defun ipcalc-ip-to-binary (ip)
+  "Convert IP address to binary string."
+  (mapconcat 'ipcalc-int-to-bin-string
+             (mapcar 'string-to-number (ipcalc-ip-to-octets ip)) ""))
+
 (defun ipcalc-binary-to-ip (binary)
   "Convert BINARY to IP address."
   (let* (full-ip
@@ -135,51 +147,191 @@ if odd."
          (1st-octet (substring binary 0 8))
          (2nd-octet (substring binary 8 16))
          (3rd-octet (substring binary 16 24))
-         (4th-octet (substring binary 24 32))
-         (octets (mapcar
-                  'ipcalc-bin-to-int
-                  `(,1st-octet ,2nd-octet ,3rd-octet ,4th-octet))))
-    (while (< count 3)
-      (setq full-ip (concat full-ip (nth count octets) "."))
-      (setq count (cl-incf count)))
-    (concat full-ip (car (last octets)))))
+         (4th-octet (substring binary 24 32)))
+    (mapconcat 'ipcalc-bin-to-int
+               `(,1st-octet ,2nd-octet ,3rd-octet ,4th-octet) ".")))
+
+(defun ipcalc-cidr-to-mask (cidr)
+  "Convert a CIDR value to a netmask."
+  (interactive "nCIDR: ")
+  (ipcalc-insert-or-return-value
+   (ipcalc-binary-to-ip (ipcalc-ones-and-pad cidr))))
+
+(defun ipcalc-mask-to-cidr (mask)
+  "Convert a MASK to a cidr value."
+  (interactive "sMASK: ")
+  (ipcalc-insert-or-return-value
+   (let* ((split (split-string (ipcalc-ip-to-binary mask) "0")))
+     (if (delete "" (cdr split))
+         (error "Invalid network mask")
+       (length (car split))))))
+
+(defun ipcalc-cidr-to-wildcard (cidr)
+  "Convert a CIDR value to a wildcard."
+  (interactive "nCIDR: ")
+  (if (or (eq 0 cidr) (< 32 cidr)) (error "Invalid CIDR"))
+  (ipcalc-insert-or-return-value
+   (ipcalc-binary-to-ip
+    (concat
+     (make-string cidr ?0)
+     (make-string (- ipcalc--cidr-default cidr) ?1)))))
+
+(defun ipcalc-wildcard-to-cidr (wildcard)
+  "Convert a WILDCARD mask to a cidr."
+  (interactive "sWILDCARD: ")
+  (ipcalc-insert-or-return-value
+   (let* ((split (split-string (ipcalc-ip-to-binary wildcard) "1"))
+          (cidr (length (car split))))
+     (if (delete "" (cdr split))
+         (error "Wrong wildcard format")
+       cidr))))
+
+(defun ipcalc-ipcidr-to-network (ip/cidr)
+  "Convert an IP/CIDR to the corresponding network."
+  (interactive "sIP/CIDR: ")
+  (ipcalc-insert-or-return-value
+   (let* ((split (split-string ip/cidr "/"))
+          (ip (car split))
+          (cidr (string-to-number (cadr split))))
+     (ipcalc-binary-to-ip
+      (concat
+       (substring (ipcalc-ip-to-binary ip) 0 cidr)
+       (make-string (- ipcalc--cidr-default cidr) ?0))))))
+
+(defun ipcalc-ipcidr-to-host-min (ip/cidr)
+  "Given a IP/CIDR, get the first possible ip of the network."
+  (interactive "sIP/CIDR: ")
+  (ipcalc-insert-or-return-value
+   (let* ((split (split-string ip/cidr "/"))
+          (ip (car split))
+          (cidr (string-to-number (cadr split))))
+     (ipcalc-binary-to-ip
+      (concat
+       (substring (ipcalc-ip-to-binary ip) 0 cidr)
+       (cl-case cidr
+         (32 "")
+         (t (make-string (- ipcalc--cidr-default cidr 1) ?0)))
+       (cl-case cidr
+         (32 "")
+         (31 "0")
+         (t "1")))))))
+
+(defun ipcalc-ipcidr-to-host-max (ip/cidr)
+  "Given a IP/CIDR, get the last possible ip of the network."
+  (interactive "sIP/CIDR: ")
+  (ipcalc-insert-or-return-value
+   (let* ((split (split-string ip/cidr "/"))
+          (ip (car split))
+          (cidr (string-to-number (cadr split))))
+     (ipcalc-binary-to-ip
+      (concat
+       (substring (ipcalc-ip-to-binary ip) 0 cidr)
+       (cl-case cidr
+         (32 "")
+         (t (make-string (- ipcalc--cidr-default cidr 1) ?1)))
+       (cl-case cidr
+         (32 "")
+         (31 "1")
+         (t "0")))))))
+
+(defun ipcalc-ipcidr-to-broadcast (ip/cidr)
+  "Convert an IP/CIDR to the corresponding broadcast direction."
+  (interactive "sIP/CIDR: ")
+  (ipcalc-insert-or-return-value
+   (let* ((split (split-string ip/cidr "/"))
+          (ip (car split))
+          (cidr (string-to-number (cadr split))))
+     (ipcalc-binary-to-ip
+      (concat
+       (substring (ipcalc-ip-to-binary ip) 0 cidr)
+       (make-string (- ipcalc--cidr-default cidr) ?1))))))
+
+(defun ipcalc-cidr-to-hosts/net (cidr)
+  "Return the number of hosts in the network from the CIDR."
+  (interactive "nCIDR: ")
+  (ipcalc-insert-or-return-value
+   (if (> cidr 30) 0
+     (- (expt 2 (- ipcalc--cidr-default cidr)) 2))))
+
+(defun ipcalc-next-ip (ip &optional ip/cidr)
+  "Given an IP calculate the next valid one. If an IP/CIDR is
+given, the function will throw an error when generating an IP
+outside the network range."
+  (interactive "sIP: ")
+  (ipcalc-insert-or-return-value
+   (let ((next-ip
+          (ipcalc-binary-to-ip
+           (ipcalc-int-to-bin-string
+            (1+
+             (string-to-number
+              (ipcalc-bin-to-int
+               (ipcalc-ip-to-binary ip))))
+            32 ))))
+     (if (and ip/cidr
+              (equal next-ip (ipcalc-ipcidr-to-broadcast ip/cidr)))
+         (error "Next IP outside of network")
+       next-ip))))
+
+(defun ipcalc-ipcidr-to-next-ip (ip/cidr)
+  "Given an IP/CIDR, generate the next IP of the network.
+
+Will throw an error if the generated IP is outside the network."
+  (interactive "sIP/CIDR: ")
+  (ipcalc-insert-or-return-value
+   (let ((cidr (cadr (split-string ip/cidr "/"))))
+     (format "%s/%s" (ipcalc-next-ip ip/cidr ip/cidr) cidr))))
+
+(defun ipcalc-alist (ip/cidr)
+  "Given an IP/CIDR, calculate all the derived values and return
+them in an alist."
+  (let* ((split (split-string ip/cidr "/"))
+         (ip (car split))
+         (cidr (string-to-number (cadr split))))
+    `((:ip . ,ip)
+      (:cidr . ,cidr)
+      (:netmask . ,(ipcalc-cidr-to-mask cidr))
+      (:wildcard . ,(ipcalc-cidr-to-wildcard cidr))
+      (:network . ,(ipcalc-ipcidr-to-network ip/cidr))
+      (:host-min . ,(ipcalc-ipcidr-to-host-min ip/cidr))
+      (:host-max . ,(ipcalc-ipcidr-to-host-max ip/cidr))
+      (:broadcast . ,(ipcalc-ipcidr-to-broadcast ip/cidr))
+      (:hosts/net . ,(ipcalc-cidr-to-hosts/net cidr)))))
+
 
 ;;;###autoload
 (defun ipcalc (ip/cidr &optional buffer)
   "IP calculator for given IP/CIDR. Insert the output in the buffer
-BUFFER (by default, the buffer `ipcalc--output-buffer-default')."
+BUFFER (by default, the buffer `ipcalc--output-buffer-default').
+
+If called with any universal argument, insert the result in the
+current buffer."
   (interactive "sIP/CIDR: ")
-  (let* ((split-input (thread-first (replace-regexp-in-string "\\\"" "" ip/cidr)
-                        (split-string "/")))
-         (ip (car split-input))
-         (cidr (cadr split-input))
-         (ip-in-binary (ipcalc-octets-as-binary (ipcalc-ip-to-octets ip)))
-         (cidr-int (string-to-number cidr))
-         (cidr-binary (ipcalc-ones-and-pad cidr-int))
-         (wildcard-binary (ipcalc-invert-binary (ipcalc-ones-and-pad cidr-int)))
-         (wildcard-ip (ipcalc-binary-to-ip wildcard-binary))
-         (netmask (ipcalc-binary-to-ip (ipcalc-invert-binary wildcard-binary)))
-         (net-binary (ipcalc-network ip cidr))
-         (net-ip (ipcalc-binary-to-ip net-binary))
-         (host-max-binary (ipcalc-host-max (ipcalc-network ip cidr) cidr))
-         (host-max-ip (ipcalc-binary-to-ip host-max-binary))
-         (host-min-binary (ipcalc-host+1 (ipcalc-network ip cidr)))
-         (host-min-ip (ipcalc-binary-to-ip host-min-binary))
-         (broadcast-binary (ipcalc-host+1 (ipcalc-host-max net-binary cidr)))
-         (broadcast-ip (ipcalc-binary-to-ip broadcast-binary))
+  (let* ((result (ipcalc-alist
+                  (replace-regexp-in-string "\\\"" "" ip/cidr)))
+         (ip (alist-get :ip result))
+         (ip-binary (ipcalc-ip-to-binary ip))
+         (cidr (alist-get :cidr result))
+         (netmask (alist-get :netmask result))
+         (wildcard (alist-get :wildcard result))
+         (network (alist-get :network result))
+         (host-min (alist-get :host-min result))
+         (host-max (alist-get :host-max result))
+         (broadcast (alist-get :broadcast result))
+         (hosts/net (alist-get :hosts/net result))
          (buffer (or buffer ipcalc--output-buffer-default)))
-    (if (and (string-equal buffer ipcalc--output-buffer-default) (get-buffer buffer))
-        (kill-buffer buffer))
-    (pop-to-buffer buffer)
+    (unless current-prefix-arg
+      (if (and (string-equal buffer ipcalc--output-buffer-default) (get-buffer buffer))
+          (kill-buffer buffer))
+      (pop-to-buffer buffer))
     (insert
-     (format "Address: %17s%40s\n" ip ip-in-binary)
-     (format "Netmask: %17s = %2s %34s\n" netmask cidr cidr-binary)
-     (format "Wildcard: %16s%40s\n" wildcard-ip wildcard-binary)
-     (format "=>\nNetwork: %17s%40s\n" net-ip (ipcalc-network ip cidr))
-     (format "HostMin: %17s%40s\n" host-min-ip host-min-binary)
-     (format "HostMax: %17s%40s\n" host-max-ip host-max-binary)
-     (format "Broadcast: %15s%40s\n" broadcast-ip broadcast-binary)
-     (format "Hosts/Net: %d\n" (ipcalc-hosts/net cidr-int)))))
+     (format "Address: %17s%40s\n" ip (ipcalc-ip-to-binary ip))
+     (format "Netmask: %17s = %2s %34s\n" netmask cidr (ipcalc-ip-to-binary netmask))
+     (format "Wildcard: %16s%40s\n" wildcard (ipcalc-ip-to-binary wildcard))
+     (format "=>\nNetwork: %17s%40s\n" network (ipcalc-ip-to-binary network))
+     (format "HostMin: %17s%40s\n" host-min (ipcalc-ip-to-binary host-min))
+     (format "HostMax: %17s%40s\n" host-max (ipcalc-ip-to-binary host-max))
+     (format "Broadcast: %15s%40s\n" broadcast (ipcalc-ip-to-binary broadcast))
+     (format "Hosts/Net: %d\n" hosts/net))))
 
 ;;;###autoload
 (defun ipcalc-current-buffer (ip/cidr)

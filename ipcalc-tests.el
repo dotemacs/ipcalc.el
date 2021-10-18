@@ -4,6 +4,13 @@
 (load-file "ipcalc.el")
 (require 'ipcalc)
 
+
+(defun ipcalc-random-ip ()
+  "Generate a random valid ip."
+  (let ((ip (list (random 255) (random 255) (random 255) (random 255))))
+    (mapconcat 'number-to-string ip ".")))
+
+
 (ert-deftest int-to-bin-string-test ()
   "Test the conversion of a integer to a binary"
   (should (equal "00000000" (ipcalc-int-to-bin-string 0)))
@@ -95,9 +102,22 @@
   (should (equal (ipcalc-host-max "11111111111111111111111111111111" "16")
                  "11111111111111111111111111111111")))
 
+(ert-deftest ip-to-binary-test ()
+  "Convert an IP to a binary string"
+  (should (equal (ipcalc-ip-to-binary "192.168.0.23")
+                 "11000000101010000000000000010111"))
+  (should (equal (ipcalc-ip-to-binary "1.1.1.1")
+                 "00000001000000010000000100000001"))
+  (should (equal (ipcalc-ip-to-binary "170.170.170.170")
+                 "10101010101010101010101010101010"))
+  (should (equal (ipcalc-ip-to-binary "0.0.0.0")
+                 "00000000000000000000000000000000"))
+  (should (equal (ipcalc-ip-to-binary "255.255.255.255")
+                 "11111111111111111111111111111111"))
+  (should-error (ipcalc-ip-binary-to "1.1.1")))
 
 (ert-deftest binary-to-ip-test ()
-  "Convert a IP in binary format to four octets separated by dots"
+  "Convert an IP in binary format to a IP string"
   (should (equal (ipcalc-binary-to-ip "11000000101010000000000000010111")
                  "192.168.0.23"))
   (should (equal (ipcalc-binary-to-ip "00000001000000010000000100000001")
@@ -110,6 +130,121 @@
   (should (equal (ipcalc-binary-to-ip "1111111111111111111111111111111100000000000000000000000000000000")
                  "255.255.255.255"))
   (should-error (ipcalc-binary-to-ip "0000000000000000")))
+
+(ert-deftest ip-to-binary-is-reversible-test ()
+  "Test that binary-to-ip is the reverse of ip-to-binary"
+  (dotimes (number 10)
+    (let ((ip (ipcalc-random-ip)))
+      (should (equal (ipcalc-binary-to-ip (ipcalc-ip-to-binary ip))
+                     ip)))))
+
+(ert-deftest cidr-to-mask-test ()
+  "Test that cidr-to-mask is correct"
+  (should (equal (ipcalc-cidr-to-mask 8) "255.0.0.0"))
+  (should (equal (ipcalc-cidr-to-mask 12) "255.240.0.0"))
+  (should (equal (ipcalc-cidr-to-mask 16) "255.255.0.0"))
+  (should (equal (ipcalc-cidr-to-mask 24) "255.255.255.0"))
+  (should (equal (ipcalc-cidr-to-mask 17) "255.255.128.0"))
+  (should (equal (ipcalc-cidr-to-mask 32) "255.255.255.255"))
+  (should-error (ipcalc-cidr-to-mask 0))
+  (should-error (ipcalc-cidr-to-mask -1))
+  (should-error (ipcalc-cidr-to-mask 40)))
+
+(ert-deftest mask-to-cidr-test ()
+  "Test that mask-to-cidr is correct"
+  (should (equal (ipcalc-mask-to-cidr "255.0.0.0") 8))
+  (should (equal (ipcalc-mask-to-cidr "255.240.0.0") 12))
+  (should (equal (ipcalc-mask-to-cidr "255.255.0.0") 16))
+  (should (equal (ipcalc-mask-to-cidr "255.255.255.0") 24))
+  (should (equal (ipcalc-mask-to-cidr "255.255.128.0") 17))
+  (should (equal (ipcalc-mask-to-cidr "255.255.255.255") 32))
+  (should (equal (ipcalc-mask-to-cidr "0.0.0.0") 0))
+  (should-error (ipcalc-mask-to-cidr "255.170.0.0")))
+
+(ert-deftest cidr-to-wildcard-test ()
+  "Tets that a cidr value is converted to a correct wildcard"
+  (should (equal (ipcalc-cidr-to-wildcard 8) "0.255.255.255"))
+  (should (equal (ipcalc-cidr-to-wildcard 12) "0.15.255.255"))
+  (should (equal (ipcalc-cidr-to-wildcard 16) "0.0.255.255"))
+  (should (equal (ipcalc-cidr-to-wildcard 24) "0.0.0.255"))
+  (should (equal (ipcalc-cidr-to-wildcard 32) "0.0.0.0"))
+  (should-error (ipcalc-cidr-to-wildcard 0))
+  (should-error (ipcalc-cidr-to-wildcard 33)))
+
+(ert-deftest wildcard-to-cidr-test ()
+  "Test that a wildcard ip is converted to a correct cidr value"
+  (should (equal (ipcalc-wildcard-to-cidr "0.255.255.255") 8))
+  (should (equal (ipcalc-wildcard-to-cidr "0.15.255.255") 12))
+  (should (equal (ipcalc-wildcard-to-cidr "0.0.255.255") 16))
+  (should (equal (ipcalc-wildcard-to-cidr "0.0.0.255") 24))
+  (should (equal (ipcalc-wildcard-to-cidr "0.0.0.0") 32))
+  (should (equal (ipcalc-wildcard-to-cidr "255.255.255.255") 0)))
+
+(ert-deftest ipcidr-to-network-test ()
+  "Test that a IP/CIDR value is correctly converted to a network."
+  (should (equal (ipcalc-ipcidr-to-network "10.59.92.199/8")
+                 "10.0.0.0"))
+  (should (equal (ipcalc-ipcidr-to-network "172.16.48.185/12")
+                 "172.16.0.0"))
+  (should (equal (ipcalc-ipcidr-to-network "192.168.73.43/16")
+                 "192.168.0.0"))
+  (should (equal (ipcalc-ipcidr-to-network "192.168.0.23/27")
+                 "192.168.0.0")))
+
+(ert-deftest ipcidr-to-host-min-test ()
+  "Test that the first host of the network is extracted correctly"
+  (should (equal (ipcalc-ipcidr-to-host-min "192.168.0.0/24")
+                 "192.168.0.1"))
+  (should (equal (ipcalc-ipcidr-to-host-min "192.168.1.0/24")
+                 "192.168.1.1"))
+  (should (equal (ipcalc-ipcidr-to-host-min "192.168.1.1/31")
+                 "192.168.1.0"))
+  (should (equal (ipcalc-ipcidr-to-host-min "192.168.1.1/32")
+                 "192.168.1.1"))
+  (should (equal (ipcalc-ipcidr-to-host-min "10.0.0.0/8")
+                 "10.0.0.1"))
+  (should (equal (ipcalc-ipcidr-to-host-min "172.16.0.0/12")
+                 "172.16.0.1"))
+  (should (equal (ipcalc-ipcidr-to-host-min "192.168.0.0/16")
+                 "192.168.0.1"))
+  (should (equal (ipcalc-ipcidr-to-host-min "192.168.170.0/27")
+                 "192.168.170.1")))
+
+(ert-deftest ipcidr-to-host-max-test ()
+  "Test that the first host of the network is extracted correctly"
+  (should (equal (ipcalc-ipcidr-to-host-max "192.168.0.0/24")
+                 "192.168.0.254"))
+  (should (equal (ipcalc-ipcidr-to-host-max "192.168.1.0/24")
+                 "192.168.1.254"))
+  (should (equal (ipcalc-ipcidr-to-host-max "192.168.1.1/31")
+                 "192.168.1.1"))
+  (should (equal (ipcalc-ipcidr-to-host-max "192.168.1.1/32")
+                 "192.168.1.1"))
+  (should (equal (ipcalc-ipcidr-to-host-max "10.0.0.0/8")
+                 "10.255.255.254"))
+  (should (equal (ipcalc-ipcidr-to-host-max "172.16.0.0/12")
+                 "172.31.255.254"))
+  (should (equal (ipcalc-ipcidr-to-host-max "192.168.0.0/16")
+                 "192.168.255.254"))
+  (should (equal (ipcalc-ipcidr-to-host-max "192.168.170.0/25")
+                 "192.168.170.126")))
+
+(ert-deftest ipcidr-to-broadcast-test ()
+  "Test that the number og hosts per network is correctly calculated"
+  (should (equal (ipcalc-ipcidr-to-broadcast "192.168.0.0/24") "192.168.0.255"))
+  (should (equal (ipcalc-ipcidr-to-broadcast "10.0.0.0/8") "10.255.255.255"))
+  (should (equal (ipcalc-ipcidr-to-broadcast "192.168.195.0/25") "192.168.195.127"))
+  (should (equal (ipcalc-ipcidr-to-broadcast "1.1.1.1/16") "1.1.255.255")))
+
+(ert-deftest cidr-to-hosts/net-test ()
+  "Test that the number og hosts per network is correctly calculated"
+  (should (equal (ipcalc-cidr-to-hosts/net 24) 254))
+  (should (equal  (ipcalc-cidr-to-hosts/net 1) 2147483646))
+  (should (equal  (ipcalc-cidr-to-hosts/net 16) 65534))
+
+  ;; Special cases
+  (should (equal (ipcalc-cidr-to-hosts/net 31) 0))
+  (should (equal (ipcalc-cidr-to-hosts/net 32) 0)))
 
 (ert-deftest ipcalc-test ()
   "Check that the output should be correctly formatted"
